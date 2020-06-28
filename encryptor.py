@@ -94,7 +94,8 @@ if sys.argv[1] == 'decode':
 
 def count(text):
     count_1 = dict(Counter(symbol.lower() for symbol in text if symbol
-                           in string.ascii_letters))
+                           in string.ascii_letters or symbol in russian_alphabeth
+                           or symbol in symbols1))
     sum_1 = sum(count_1.values())
     if sum_1:
         for l in count_1.keys():
