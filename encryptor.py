@@ -1,9 +1,10 @@
+import pickle
 import string
-import json
-from collections import Counter
-from itertools import cycle
 import sys
+from collections import Counter
 from contextlib import contextmanager
+from itertools import cycle, chain
+
 
 
 russian_alphabeth = 'йцукенгшщзхъфывапролджэячсмитьбюё'
@@ -58,6 +59,8 @@ def vigenere(text, key, is_encode):
             ord1 = ord(key1.lower()) - ord('а')
         elif symbol in symbols:
             ord1 = symbols1[symbol]
+        else:
+        	ord1 = 0
         text1 += next_symbol(symbol, ord1 if is_encode else -ord1)
     return text1
 
@@ -84,18 +87,8 @@ def code_and_decode(cipher, key, input_, output_, is_encode):
         output_file.write(text)
 
 
-if sys.argv[1] == 'encode':
-    code_and_decode(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5],
-                    is_encode=True)
-if sys.argv[1] == 'decode':
-    code_and_decode(sys.argv[2], sys.argv[3],
-                    sys.argv[4], sys.argv[5], is_encode=False)
-
-
 def count(text):
-    count_1 = dict(Counter(symbol.lower() for symbol in text if symbol
-                           in string.ascii_letters or symbol in russian_alphabeth
-                           or symbol in symbols1))
+    count_1 = dict(Counter(chain(text.lower())))
     sum_1 = sum(count_1.values())
     if sum_1:
         for l in count_1.keys():
@@ -106,12 +99,8 @@ def count(text):
 def train(text_, model_):
     with get_stream(text_, 'r') as text_file:
         text = text_file.read()
-    with open(model_, 'w') as model_file:
-        json.dump(count(text), model_file)
-
-
-if sys.argv[1] == 'train':
-    train(sys.argv[2], sys.argv[3])
+    with open(model_, 'wb') as model_file:
+        pickle.dump(count(text), model_file)
 
 
 def diff(step, mod, count):
@@ -122,8 +111,8 @@ def diff(step, mod, count):
 
 
 def hack(input_, output_, model_):
-    with open(model_, 'r') as model_file:
-        value_in_model_file = json.load(model_file)
+    with open(model_, 'rb') as model_file:
+        value_in_model_file = pickle.load(model_file)
     with get_stream(input_, 'r') as input_file:
         text = input_file.read()
     min_step = min(range(26), key=lambda step:
@@ -132,6 +121,18 @@ def hack(input_, output_, model_):
     with get_stream(output_, 'w') as output_file:
         output_file.write(text)
 
+def main():
+	if sys.argv[1] == 'encode':
+		code_and_decode(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5],
+		                is_encode=True)
+	if sys.argv[1] == 'decode':
+		code_and_decode(sys.argv[2], sys.argv[3],
+		                sys.argv[4], sys.argv[5], is_encode=False)
+	if sys.argv[1] == 'train':
+		train(sys.argv[2], sys.argv[3])
+	if sys.argv[1] == 'hack':
+		hack(sys.argv[2], sys.argv[3], sys.argv[4])
 
-if sys.argv[1] == 'hack':
-    hack(sys.argv[2], sys.argv[3], sys.argv[4])
+
+if __name__ == '__main__':
+	main()
