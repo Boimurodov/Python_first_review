@@ -115,9 +115,9 @@ def hack(input_, output_, model_):
         value_in_model_file = pickle.load(model_file)
     with get_stream(input_, 'r') as input_file:
         text = input_file.read()
-    min_step = min(range(26), key=lambda step:
-                   diff(step, value_in_model_file, count(text)))
-    text = caesar(text, min_step, True)
+    min_step = 26 - min(range(26), key=lambda step:
+                        diff(step, value_in_model_file, count(text)))
+    text = caesar(text, min_step, is_encode=False)
     with get_stream(output_, 'w') as output_file:
         output_file.write(text)
 
