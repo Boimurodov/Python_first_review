@@ -121,17 +121,59 @@ def hack(input_, output_, model_):
     with get_stream(output_, 'w') as output_file:
         output_file.write(text)
 
+
+def coincident_index(text):
+    len_1 = 0
+    for symbol in text:
+        if symbol in string.ascii_letters:
+            len_1 += 1
+    count_1 = dict(Counter(chain(text.lower())))
+    sum_1 = 0
+    for symbol in string.ascii_lowercase:
+        if symbol not in count_1:
+            continue
+        sum_1 += count_1[symbol] * (count_1[symbol] - 1) / (len_1 * (len_1 - 1))
+    return sum_1
+
+
+def len_key(text):
+    n = 0
+    for symbol in text:
+        if symbol in string.ascii_letters:
+            n += 1
+    len_ = (0.027 * n) / ((n - 1) * coincident_index(text) + 0.065 - 0.038 * n)
+    return int(len_) + 1
+
+
+def find_key(text, len_key_text, model_):
+    key = ''
+    for i in range(len_key_text):
+        key += chr(ord('a') + suitable_step(text[i::len_key_text], model_) % 26)
+    return key
+
+
+def hack_vigenere(input_, output_, model_):
+    with get_stream(input_, 'r') as input_file:
+        text = input_file.read()
+    key = find_key(text, len_key(text), model_)
+    text = vigenere(text, key, is_encode=False)
+    with get_stream(output_, 'w') as output_file:
+        output_file.write(text)
+
+
 def main():
-	if sys.argv[1] == 'encode':
-		code_and_decode(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5],
-		                is_encode=True)
-	if sys.argv[1] == 'decode':
-		code_and_decode(sys.argv[2], sys.argv[3],
-		                sys.argv[4], sys.argv[5], is_encode=False)
-	if sys.argv[1] == 'train':
-		train(sys.argv[2], sys.argv[3])
-	if sys.argv[1] == 'hack':
-		hack(sys.argv[2], sys.argv[3], sys.argv[4])
+    if sys.argv[1] == 'encode':
+	code_and_decode(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5],
+	                is_encode=True)
+    if sys.argv[1] == 'decode':
+	code_and_decode(sys.argv[2], sys.argv[3],
+	                sys.argv[4], sys.argv[5], is_encode=False)
+    if sys.argv[1] == 'train':
+	train(sys.argv[2], sys.argv[3])
+    if sys.argv[1] == 'hack':
+	hack(sys.argv[2], sys.argv[3], sys.argv[4])
+    if sys.argv[1] == 'hack_vigenere':
+        hack_vigenere(sys.argv[2], sys.argv[3], sys.argv[4])
 
 
 if __name__ == '__main__':
